@@ -39,7 +39,7 @@ public class NewGame extends AppCompatActivity {
 
         indexProblem = validateSeparatorPlayers();
         if (indexProblem != -1) {
-            Toast.makeText(getApplicationContext(), R.string.invalid_name_player, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.invalid_name_player).replace("__separator__", SEPARATOR), Toast.LENGTH_SHORT).show();
             ((LinearLayout) layout.getChildAt(indexProblem)).getChildAt(0).requestFocus();
             return;
         }
@@ -123,3 +123,4 @@ public class NewGame extends AppCompatActivity {
 }
 
 // TODO: Broadcast service
+// TODO: add dialog before finish

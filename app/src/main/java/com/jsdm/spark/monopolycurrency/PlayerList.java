@@ -171,3 +171,4 @@ public class PlayerList extends AppCompatActivity {
 
 // TODO: Style buttons
 // TODO: Save and Reload State
+// TODO: add dialog before finish

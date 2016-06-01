@@ -11,7 +11,7 @@
     <string name="invalid_equals">All players must have a unique name</string>
     <string name="invalid_count">There must be at least 2 players and no more than 6</string>
     <string name="title_activity_player_list">PlayerList</string>
-    <string name="invalid_name_player">Player\'s name can\'t contain \": $\"</string>
+    <string name="invalid_name_player">Player\'s name can\'t contain \"__separator__\"</string>
     <string name="title_activity_transaction">Transaction</string>
     <string name="bank_player">Buy</string>
     <string name="freeparking_player">Tax</string>
