@@ -112,9 +112,9 @@ public class NewGame extends AppCompatActivity {
             return;
         }
         getLayoutInflater().inflate(R.layout.layout_player, layout);
+        ((LinearLayout) layout.getChildAt(layout.getChildCount() - 1)).getChildAt(0).requestFocus();
     }
 }
 
 // TODO: Broadcast service
-// TODO: Auto focus when adding new player
 // TODO: Validation must be done by individual elements
