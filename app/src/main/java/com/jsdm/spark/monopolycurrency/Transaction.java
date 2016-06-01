@@ -72,5 +72,3 @@ public class Transaction extends AppCompatActivity {
         mediaPlayer.start();
     }
 }
-
-// TODO: Sound on transactions
