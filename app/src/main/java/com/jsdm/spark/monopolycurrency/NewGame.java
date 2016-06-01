@@ -115,5 +115,6 @@ public class NewGame extends AppCompatActivity {
     }
 }
 
+// TODO: Broadcast service
 // TODO: Auto focus when adding new player
 // TODO: Validation must be done by individual elements

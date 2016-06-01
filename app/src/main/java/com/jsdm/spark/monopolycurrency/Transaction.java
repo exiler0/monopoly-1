@@ -1,6 +1,7 @@
 package com.jsdm.spark.monopolycurrency;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -44,6 +45,7 @@ public class Transaction extends AppCompatActivity {
         intent.putExtra(EXTRA_FROM, from);
         intent.putExtra(EXTRA_TO, to);
         setResult(RESULT_OK, intent);
+        playSound(R.raw.transfer);
         finish();
     }
 
@@ -64,4 +66,11 @@ public class Transaction extends AppCompatActivity {
             }
         }
     }
+
+    private void playSound(int resource) {
+        MediaPlayer mediaPlayer = MediaPlayer.create(this, resource);
+        mediaPlayer.start();
+    }
 }
+
+// TODO: Sound on transactions

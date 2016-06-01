@@ -169,6 +169,5 @@ public class PlayerList extends AppCompatActivity {
     }
 }
 
-// TODO: sound on transactions
 // TODO: Style buttons
 // TODO: Save and Reload State
