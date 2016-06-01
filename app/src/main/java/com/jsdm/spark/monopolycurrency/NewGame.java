@@ -30,18 +30,24 @@ public class NewGame extends AppCompatActivity {
 
     public void ready(View view) {
 
-        if (!validateNamePlayers()) {
+        int indexProblem = validateNamePlayers();
+        if (indexProblem != -1) {
             Toast.makeText(getApplicationContext(), R.string.invalid_player, Toast.LENGTH_SHORT).show();
+            ((LinearLayout) layout.getChildAt(indexProblem)).getChildAt(0).requestFocus();
             return;
         }
 
-        if (!validateSeparatorPlayers()) {
+        indexProblem = validateSeparatorPlayers();
+        if (indexProblem != -1) {
             Toast.makeText(getApplicationContext(), R.string.invalid_name_player, Toast.LENGTH_SHORT).show();
+            ((LinearLayout) layout.getChildAt(indexProblem)).getChildAt(0).requestFocus();
             return;
         }
 
-        if (!validatePlayersEquals()) {
+        indexProblem = validatePlayersEquals();
+        if (indexProblem != -1) {
             Toast.makeText(getApplicationContext(), R.string.invalid_equals, Toast.LENGTH_SHORT).show();
+            ((LinearLayout) layout.getChildAt(indexProblem)).getChildAt(0).requestFocus();
             return;
         }
 
@@ -73,37 +79,37 @@ public class NewGame extends AppCompatActivity {
         return (layout.getChildCount() >= MIN_COUNT_PLAYERS && layout.getChildCount() <= MAX_COUNT_PLAYERS);
     }
 
-    boolean validatePlayersEquals() {
+    int validatePlayersEquals() {
         for (int i = 0; i < layout.getChildCount(); i++) {
             String str = ((EditText) ((LinearLayout) layout.getChildAt(i)).getChildAt(0)).getText().toString();
             for (int j = 0; j < layout.getChildCount(); j++) {
                 String str2 = ((EditText) ((LinearLayout) layout.getChildAt(j)).getChildAt(0)).getText().toString();
                 if (i != j && str.equals(str2)) {
-                    return false;
+                    return j;
                 }
             }
         }
-        return true;
+        return -1;
     }
 
-    boolean validateNamePlayers() {
+    int validateNamePlayers() {
         for (int i = 0; i < layout.getChildCount(); i++) {
             String str = ((EditText) ((LinearLayout) layout.getChildAt(i)).getChildAt(0)).getText().toString();
             if (str.isEmpty()) {
-                return false;
+                return i;
             }
         }
-        return true;
+        return -1;
     }
 
-    boolean validateSeparatorPlayers() {
+    int validateSeparatorPlayers() {
         for (int i = 0; i < layout.getChildCount(); i++) {
             String str = ((EditText) ((LinearLayout) layout.getChildAt(i)).getChildAt(0)).getText().toString();
             if (str.contains(SEPARATOR)) {
-                return false;
+                return i;
             }
         }
-        return true;
+        return -1;
     }
 
     public void addPlayer(View view) {
@@ -117,4 +123,3 @@ public class NewGame extends AppCompatActivity {
 }
 
 // TODO: Broadcast service
-// TODO: Validation must be done by individual elements
