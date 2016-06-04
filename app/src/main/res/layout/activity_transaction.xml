@@ -33,12 +33,10 @@
 
             <Button
                 android:id="@+id/bank_pays_button"
-                style="?android:attr/buttonStyleSmall"
-                android:background="@drawable/bank"
+                android:theme="@style/AppTheme.Bank"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:elegantTextHeight="false"
-                android:onClick="buttonClick"
                 android:text="@string/bank_pays" />
 
             <Button

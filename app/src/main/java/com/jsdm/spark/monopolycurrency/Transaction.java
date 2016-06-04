@@ -23,6 +23,14 @@ public class Transaction extends AppCompatActivity {
         setContentView(R.layout.activity_transaction);
         layout = (LinearLayout) findViewById(R.id.players_pay);
 
+        Button button = (Button) findViewById(R.id.bank_pays_button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buttonClick(v);
+            }
+        });
+
         Intent intent = getIntent();
         String player = intent.getStringExtra(PlayerList.EXTRA_SENDER_NAME);
         String[] players = intent.getStringArrayExtra(NewGame.EXTRA_PLAYER_LIST);
