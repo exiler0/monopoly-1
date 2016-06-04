@@ -16,6 +16,7 @@ public class NewGame extends AppCompatActivity {
     public final static int MAX_COUNT_PLAYERS = 15;
     public final static int MIN_COUNT_PLAYERS = 2;
     LinearLayout layout;
+    private NSDMonopolyClient nsdMonopolyDiscover;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +56,8 @@ public class NewGame extends AppCompatActivity {
 
         if (!validatePlayersCount()) {
             Toast.makeText(getApplicationContext(), R.string.invalid_count, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.trying_to_connect, Toast.LENGTH_SHORT).show();
+            ensureNSDDiscovery();
             return;
         }
 
@@ -63,6 +66,19 @@ public class NewGame extends AppCompatActivity {
         Intent intent = new Intent(this, PlayerList.class);
         intent.putExtra(EXTRA_PLAYER_LIST, players);
         startActivity(intent);
+    }
+
+    private void ensureNSDDiscovery() {
+        if (nsdMonopolyDiscover != null) {
+            return;
+        }
+        nsdMonopolyDiscover = new NSDMonopolyClient(this, new ConnectListener() {
+            @Override
+            public void onConnect() {
+                Intent intent = new Intent(NewGame.this, PlayerList.class);
+                startActivity(intent);
+            }
+        });
     }
 
     String[] getNameList() {
@@ -147,6 +163,15 @@ public class NewGame extends AppCompatActivity {
         super.onBackPressed();
     }
 
-}
+    @Override
+    public void onPause() {
+        if (nsdMonopolyDiscover != null) {
+            nsdMonopolyDiscover.stopService();
+        }
+        super.onPause();
+    }
 
-// TODO: Broadcast service
+    public interface ConnectListener {
+        public void onConnect();
+    }
+}

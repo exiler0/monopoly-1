@@ -19,6 +19,7 @@ public class PlayerList extends AppCompatActivity {
     LinearLayout log;
     GamePlayer[] player_list;
     GamePlayer tax_player;
+    NSDMonopolyServer monopolyServer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,8 +31,19 @@ public class PlayerList extends AppCompatActivity {
         Intent intent = getIntent();
         String[] players = intent.getStringArrayExtra(NewGame.EXTRA_PLAYER_LIST);
 
+        if (players == null) {
+            Toast.makeText(getApplicationContext(), "Client Mode!!!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Toast.makeText(getApplicationContext(), "SSS", Toast.LENGTH_SHORT).show();
+
         createPlayers(players);
         tax_player = new GamePlayer(0, "Tax");
+
+        monopolyServer = new NSDMonopolyServer(8888, this);
+
+        Toast.makeText(getApplicationContext(), "RRRRR", Toast.LENGTH_SHORT).show();
     }
 
     void createPlayers(String[] players) {
@@ -41,6 +53,7 @@ public class PlayerList extends AppCompatActivity {
             createButtonPlayer(player_list[i]);
         }
     }
+
 
     void createButtonPlayer(GamePlayer player) {
         Button button = new Button(this);
@@ -192,5 +205,13 @@ public class PlayerList extends AppCompatActivity {
 
     public void finishGame() {
         super.onBackPressed();
+    }
+
+    @Override
+    public void onPause() {
+        if (monopolyServer != null) {
+            monopolyServer.stopService();
+        }
+        super.onPause();
     }
 }
