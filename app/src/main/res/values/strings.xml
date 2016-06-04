@@ -19,4 +19,9 @@
     <string name="freeparking_pays">Free Parking</string>
     <string name="error_in_transaction">There was an errror during transaction</string>
     <string name="cant_buy">This player does not have enough money</string>
+    <string name="sure">Are you sure?</string>
+    <string name="state_lost">Current state will be lost.</string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+    <string name="game_lost">Current game configuration will be lost.</string>
 </resources>

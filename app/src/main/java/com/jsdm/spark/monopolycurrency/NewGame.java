@@ -1,7 +1,9 @@
 package com.jsdm.spark.monopolycurrency;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
@@ -120,7 +122,31 @@ public class NewGame extends AppCompatActivity {
         getLayoutInflater().inflate(R.layout.layout_player, layout);
         ((LinearLayout) layout.getChildAt(layout.getChildCount() - 1)).getChildAt(0).requestFocus();
     }
+
+    @Override
+    public void onBackPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.game_lost)
+                .setTitle(R.string.sure)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finishApp();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+        builder.create().show();
+    }
+
+    public void finishApp() {
+        super.onBackPressed();
+    }
+
 }
 
 // TODO: Broadcast service
-// TODO: add dialog before finish

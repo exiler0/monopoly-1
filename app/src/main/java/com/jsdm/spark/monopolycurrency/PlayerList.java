@@ -1,7 +1,9 @@
 package com.jsdm.spark.monopolycurrency;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -167,8 +169,28 @@ public class PlayerList extends AppCompatActivity {
         }
         return null;
     }
-}
 
-// TODO: Style buttons
-// TODO: Save and Reload State
-// TODO: add dialog before finish
+    @Override
+    public void onBackPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.state_lost)
+                .setTitle(R.string.sure)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finishGame();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+        builder.create().show();
+    }
+
+    public void finishGame() {
+        super.onBackPressed();
+    }
+}
