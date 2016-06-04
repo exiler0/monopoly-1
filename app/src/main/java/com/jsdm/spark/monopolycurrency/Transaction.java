@@ -31,6 +31,30 @@ public class Transaction extends AppCompatActivity {
             }
         });
 
+        button = (Button) findViewById(R.id.freeparking_pays_button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buttonClick(v);
+            }
+        });
+
+        button = (Button) findViewById(R.id.bank_player_button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buttonClick(v);
+            }
+        });
+
+        button = (Button) findViewById(R.id.freeparking_player_button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buttonClick(v);
+            }
+        });
+
         Intent intent = getIntent();
         String player = intent.getStringExtra(PlayerList.EXTRA_SENDER_NAME);
         String[] players = intent.getStringArrayExtra(NewGame.EXTRA_PLAYER_LIST);

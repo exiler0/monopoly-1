@@ -41,23 +41,23 @@
 
             <Button
                 android:id="@+id/freeparking_pays_button"
+                android:theme="@style/AppTheme.FreeParking"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:onClick="buttonClick"
                 android:text="@string/freeparking_pays" />
 
             <Button
                 android:id="@+id/bank_player_button"
+                android:theme="@style/AppTheme.Buy"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:onClick="buttonClick"
                 android:text="@string/bank_player" />
 
             <Button
                 android:id="@+id/freeparking_player_button"
+                android:theme="@style/AppTheme.Tax"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:onClick="buttonClick"
                 android:text="@string/freeparking_player" />
 
         </LinearLayout>

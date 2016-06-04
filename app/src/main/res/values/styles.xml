@@ -11,11 +11,26 @@
 
     <style name="AppTheme.Bank" parent="AppTheme">
         <!-- Customize your theme here. -->
-        <item name="android:textSize">70sp</item>
-        <item name="colorControlHighlight">@color/colorAccent</item>
-        <item name="colorButtonNormal">@color/colorPrimary</item>
-        <item name="colorSwitchThumbNormal">@color/colorPrimaryDark</item>
+        <item name="colorControlHighlight">@android:color/holo_blue_bright</item>
+        <item name="colorButtonNormal">@android:color/holo_blue_dark</item>
     </style>
 
+    <style name="AppTheme.FreeParking" parent="AppTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorControlHighlight">@android:color/holo_green_light</item>
+        <item name="colorButtonNormal">@android:color/holo_green_dark</item>
+    </style>
+
+    <style name="AppTheme.Buy" parent="AppTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorControlHighlight">@android:color/holo_orange_light</item>
+        <item name="colorButtonNormal">@android:color/holo_orange_dark</item>
+    </style>
+
+    <style name="AppTheme.Tax" parent="AppTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorControlHighlight">@android:color/holo_red_light</item>
+        <item name="colorButtonNormal">@android:color/holo_red_dark</item>
+    </style>
 
 </resources>
