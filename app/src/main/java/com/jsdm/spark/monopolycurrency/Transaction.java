@@ -16,6 +16,7 @@ public class Transaction extends AppCompatActivity {
     public final static String EXTRA_FROM = "com.spark.jsdm.monopolycurrency.transactionname";
     public final static String EXTRA_TO = "com.spark.jsdm.monopolycurrency.transactionreceiver";
     LinearLayout layout;
+    private MediaPlayer mediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +101,11 @@ public class Transaction extends AppCompatActivity {
     }
 
     private void playSound(int resource) {
-        MediaPlayer mediaPlayer = MediaPlayer.create(this, resource);
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        }
+        mediaPlayer = MediaPlayer.create(this, resource);
         mediaPlayer.start();
     }
 }

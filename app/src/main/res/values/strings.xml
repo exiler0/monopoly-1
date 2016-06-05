@@ -25,4 +25,6 @@
     <string name="cancel">Cancel</string>
     <string name="game_lost">Current game configuration will be lost.</string>
     <string name="trying_to_connect">Trying to connect to a server.</string>
+    <string name="client_mode">Client Mode.</string>
+    <string name="server_mode">Server Mode.</string>
 </resources>

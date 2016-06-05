@@ -4,23 +4,63 @@ import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.jsdm.spark.monopolycurrency.server.Client;
+import com.jsdm.spark.monopolycurrency.server.Server;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by Silvio on 6/4/2016.
  */
 public class NSDMonopolyServer {
 
-
     public static final String NSD_MONOPOLY = "NSDMonopoly";
     public static final String HTTP_TCP = "_http._tcp.";
     NsdManager nsdManager;
     private NsdManager.RegistrationListener registrationListener;
+    ServerSocket server;
+    List<ClientConnection> clientConnections;
+    private final Thread serverThreadAccept;
+    private volatile boolean running;
 
-    public NSDMonopolyServer(int port, Context context) {
-        registerService(port, context);
+    public NSDMonopolyServer(final Context context) {
+        try {
+            server = new ServerSocket(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        running = true;
+        clientConnections = Collections.synchronizedList(new ArrayList<ClientConnection>());
+        registerService(server.getLocalPort(), context);
+
+        serverThreadAccept = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (running) {
+                    try {
+                        Socket socket = server.accept();
+                        clientConnections.add(new ClientConnection(socket));
+                        Toast.makeText(context, socket.getInetAddress().toString() + ":" + Integer.toString(socket.getPort()), Toast.LENGTH_SHORT).show();
+                        Log.d("ClientConnect", socket.getInetAddress().toString() + ":" + Integer.toString(socket.getPort()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        serverThreadAccept.start();
     }
 
     public void stopService() {
+        running = false;
         nsdManager.unregisterService(registrationListener);
     }
 
@@ -61,4 +101,11 @@ public class NSDMonopolyServer {
 
     }
 
+    private class ClientConnection {
+        private Socket socket;
+
+        public ClientConnection(Socket socket) {
+            this.socket = socket;
+        }
+    }
 }

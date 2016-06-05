@@ -8,14 +8,14 @@ import android.util.Log;
 /**
  * Created by Silvio on 6/4/2016.
  */
-public class NSDMonopolyClient {
+public class NSDMonopolyDiscoverer {
     NsdManager nsdManager;
     NsdManager.DiscoveryListener discoveryListener;
     NsdManager.ResolveListener resolveListener;
     private boolean stoppped = false;
-    private NewGame.ConnectListener connectListener;
+    private NewGame.DiscoveryListener connectListener;
 
-    public NSDMonopolyClient(Context context, NewGame.ConnectListener connectListener) {
+    public NSDMonopolyDiscoverer(Context context, NewGame.DiscoveryListener connectListener) {
         this.connectListener = connectListener;
         discoverService(context);
     }
@@ -45,7 +45,7 @@ public class NSDMonopolyClient {
                 Log.d("onServiceResolved", "Service Port: " + serviceInfo.getPort());
 
                 // connect to server
-                connectListener.onConnect();
+                connectListener.onDiscover(serviceInfo.getHost().toString().replace("/", ""), serviceInfo.getPort());
             }
         };
 

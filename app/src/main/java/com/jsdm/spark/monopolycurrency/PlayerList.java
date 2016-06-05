@@ -11,7 +11,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
 public class PlayerList extends AppCompatActivity {
     public final static int INITIAL_MONEY = 1500;
     public final static String EXTRA_SENDER_NAME = "com.spark.jsdm.monopolycurrency.transactionsender";
@@ -20,6 +19,7 @@ public class PlayerList extends AppCompatActivity {
     GamePlayer[] player_list;
     GamePlayer tax_player;
     NSDMonopolyServer monopolyServer;
+    private MonopolyClient monopolyClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,18 +32,20 @@ public class PlayerList extends AppCompatActivity {
         String[] players = intent.getStringArrayExtra(NewGame.EXTRA_PLAYER_LIST);
 
         if (players == null) {
-            Toast.makeText(getApplicationContext(), "Client Mode!!!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.client_mode, Toast.LENGTH_SHORT).show();
+            String address = intent.getStringExtra(NewGame.EXTRA_SERVER_ADDRESS);
+            int port = intent.getIntExtra(NewGame.EXTRA_SERVER_PORT, 0);
+            Toast.makeText(getApplicationContext(), "Address: " + address, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Port: " + Integer.toString(port), Toast.LENGTH_SHORT).show();
+            monopolyClient = new MonopolyClient(address, port);
+
             return;
         }
 
-        Toast.makeText(getApplicationContext(), "SSS", Toast.LENGTH_SHORT).show();
-
         createPlayers(players);
-        tax_player = new GamePlayer(0, "Tax");
-
-        monopolyServer = new NSDMonopolyServer(8888, this);
-
-        Toast.makeText(getApplicationContext(), "RRRRR", Toast.LENGTH_SHORT).show();
+        tax_player = new GamePlayer(0, getString(R.string.freeparking_player));
+        monopolyServer = new NSDMonopolyServer(this);
+        Toast.makeText(getApplicationContext(), R.string.server_mode, Toast.LENGTH_SHORT).show();
     }
 
     void createPlayers(String[] players) {
@@ -156,7 +158,6 @@ public class PlayerList extends AppCompatActivity {
                 addToLog(result);
             }
         }
-
         refreshButtonsPlayers();
     }
 
@@ -209,9 +210,25 @@ public class PlayerList extends AppCompatActivity {
 
     @Override
     public void onPause() {
-        if (monopolyServer != null) {
-            monopolyServer.stopService();
-        }
+        tryStopServer();
+        tryStopClient();
+
         super.onPause();
+    }
+
+    private void tryStopClient() {
+        if (monopolyClient != null) {
+            monopolyClient.stopService();
+        }
+    }
+
+    private void tryStopServer() {
+        if (monopolyServer != null) {
+            try {
+                monopolyServer.stopService();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

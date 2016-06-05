@@ -12,11 +12,13 @@ import android.widget.Toast;
 
 public class NewGame extends AppCompatActivity {
     public final static String EXTRA_PLAYER_LIST = "com.spark.jsdm.monopolycurrency.playerlist";
+    public final static String EXTRA_SERVER_ADDRESS = "com.spark.jsdm.monopolycurrency.serveraddress";
+    public final static String EXTRA_SERVER_PORT = "com.spark.jsdm.monopolycurrency.serverport";
     public final static String SEPARATOR = ": $";
     public final static int MAX_COUNT_PLAYERS = 15;
     public final static int MIN_COUNT_PLAYERS = 2;
     LinearLayout layout;
-    private NSDMonopolyClient nsdMonopolyDiscover;
+    private NSDMonopolyDiscoverer nsdMonopolyDiscover;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,10 +74,12 @@ public class NewGame extends AppCompatActivity {
         if (nsdMonopolyDiscover != null) {
             return;
         }
-        nsdMonopolyDiscover = new NSDMonopolyClient(this, new ConnectListener() {
+        nsdMonopolyDiscover = new NSDMonopolyDiscoverer(this, new DiscoveryListener() {
             @Override
-            public void onConnect() {
+            public void onDiscover(String address, int port) {
                 Intent intent = new Intent(NewGame.this, PlayerList.class);
+                intent.putExtra(EXTRA_SERVER_ADDRESS, address);
+                intent.putExtra(EXTRA_SERVER_PORT, port);
                 startActivity(intent);
             }
         });
@@ -166,12 +170,17 @@ public class NewGame extends AppCompatActivity {
     @Override
     public void onPause() {
         if (nsdMonopolyDiscover != null) {
-            nsdMonopolyDiscover.stopService();
+            try {
+                nsdMonopolyDiscover.stopService();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
         super.onPause();
     }
 
-    public interface ConnectListener {
-        public void onConnect();
+    public interface DiscoveryListener {
+        public void onDiscover(String address, int port);
     }
 }
