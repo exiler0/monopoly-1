@@ -10,6 +10,8 @@ import com.jsdm.spark.monopolycurrency.server.Client;
 import com.jsdm.spark.monopolycurrency.server.Server;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -48,7 +50,6 @@ public class NSDMonopolyServer {
                     try {
                         Socket socket = server.accept();
                         clientConnections.add(new ClientConnection(socket));
-                        Toast.makeText(context, socket.getInetAddress().toString() + ":" + Integer.toString(socket.getPort()), Toast.LENGTH_SHORT).show();
                         Log.d("ClientConnect", socket.getInetAddress().toString() + ":" + Integer.toString(socket.getPort()));
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -57,6 +58,12 @@ public class NSDMonopolyServer {
             }
         });
         serverThreadAccept.start();
+    }
+
+    public void sendToAll(String msg) {
+        for (ClientConnection cc : clientConnections) {
+            cc.sendTo(msg);
+        }
     }
 
     public void stopService() {
@@ -102,10 +109,28 @@ public class NSDMonopolyServer {
     }
 
     private class ClientConnection {
+        private ObjectOutputStream out;
         private Socket socket;
 
         public ClientConnection(Socket socket) {
             this.socket = socket;
+            try {
+                out = new ObjectOutputStream(socket.getOutputStream());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void sendTo(Object msg) {
+            if (out == null) {
+                Log.d("null out stream", "Trying to send data");
+                return;
+            }
+            try {
+                out.writeObject(msg);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

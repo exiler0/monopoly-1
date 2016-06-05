@@ -3,8 +3,10 @@ package com.jsdm.spark.monopolycurrency;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -35,9 +37,21 @@ public class PlayerList extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), R.string.client_mode, Toast.LENGTH_SHORT).show();
             String address = intent.getStringExtra(NewGame.EXTRA_SERVER_ADDRESS);
             int port = intent.getIntExtra(NewGame.EXTRA_SERVER_PORT, 0);
-            Toast.makeText(getApplicationContext(), "Address: " + address, Toast.LENGTH_SHORT).show();
-            Toast.makeText(getApplicationContext(), "Port: " + Integer.toString(port), Toast.LENGTH_SHORT).show();
-            monopolyClient = new MonopolyClient(address, port);
+            Toast.makeText(getApplicationContext(), getString(R.string.found_server).replace("__address__", address).replace("__port__", Integer.toString(port)), Toast.LENGTH_SHORT).show();
+            final Handler handler = new Handler();
+            monopolyClient = new MonopolyClient(address, port, new OnMsgListener() {
+                @Override
+                public void onMsg(final Object msg) {
+                    Log.d("Display Msg", msg.toString());
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d("Post run", msg.toString());
+                            Toast.makeText(getApplicationContext(), msg.toString(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
 
             return;
         }
@@ -158,6 +172,9 @@ public class PlayerList extends AppCompatActivity {
                 addToLog(result);
             }
         }
+
+        monopolyServer.sendToAll("Transaction");
+
         refreshButtonsPlayers();
     }
 
@@ -210,6 +227,7 @@ public class PlayerList extends AppCompatActivity {
 
     @Override
     public void onPause() {
+        // TODO: Can't be done in here because transaction is open continuously (server discovery and accept needed and client too)
         tryStopServer();
         tryStopClient();
 
