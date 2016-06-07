@@ -184,3 +184,6 @@ public class NewGame extends AppCompatActivity {
         public void onDiscover(String address, int port);
     }
 }
+
+// TODO: Font size depending on device
+// TODO: "Ready" button change text depending on players

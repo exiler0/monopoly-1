@@ -60,9 +60,10 @@ public class NSDMonopolyServer {
         serverThreadAccept.start();
     }
 
-    public void sendToAll(String msg) {
+    public void sendToAll(Serializable msg) {
         for (ClientConnection cc : clientConnections) {
             cc.sendTo(msg);
+            Log.d("Sending to clients", ((MonopolyMessage) msg).getPrintable());
         }
     }
 
@@ -121,7 +122,7 @@ public class NSDMonopolyServer {
             }
         }
 
-        private void sendTo(Object msg) {
+        private void sendTo(Serializable msg) {
             if (out == null) {
                 Log.d("null out stream", "Trying to send data");
                 return;

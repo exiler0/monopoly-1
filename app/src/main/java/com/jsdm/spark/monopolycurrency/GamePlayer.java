@@ -1,15 +1,21 @@
 package com.jsdm.spark.monopolycurrency;
 
+import java.io.Serializable;
+
 /**
  * Created by Silvio on 9/20/2015.
  */
-public class GamePlayer {
+public class GamePlayer implements Serializable {
     int money;
     String name;
 
     GamePlayer(int money, String name) {
         this.money = money;
         this.name = name;
+    }
+
+    public String getPrintable() {
+        return this.name + NewGame.SEPARATOR + this.money;
     }
 
     public String getName() {

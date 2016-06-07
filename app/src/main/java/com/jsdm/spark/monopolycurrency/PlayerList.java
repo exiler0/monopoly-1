@@ -2,6 +2,7 @@ package com.jsdm.spark.monopolycurrency;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
@@ -19,9 +20,12 @@ public class PlayerList extends AppCompatActivity {
     LinearLayout layout;
     LinearLayout log;
     GamePlayer[] player_list;
+
     GamePlayer tax_player;
     NSDMonopolyServer monopolyServer;
     private MonopolyClient monopolyClient;
+    private MediaPlayer mediaPlayer;
+    private MonopolyMessage lastMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,15 +43,17 @@ public class PlayerList extends AppCompatActivity {
             int port = intent.getIntExtra(NewGame.EXTRA_SERVER_PORT, 0);
             Toast.makeText(getApplicationContext(), getString(R.string.found_server).replace("__address__", address).replace("__port__", Integer.toString(port)), Toast.LENGTH_SHORT).show();
             final Handler handler = new Handler();
-            monopolyClient = new MonopolyClient(address, port, new OnMsgListener() {
+            monopolyClient = new MonopolyClient(address, port, new OnMonopolyMessageListener() {
                 @Override
-                public void onMsg(final Object msg) {
+                public void onMessage(MonopolyMessage msg) {
+                    PlayerList.this.setLastMessage(msg);
                     Log.d("Display Msg", msg.toString());
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            Log.d("Post run", msg.toString());
-                            Toast.makeText(getApplicationContext(), msg.toString(), Toast.LENGTH_SHORT).show();
+                            Log.d("Receiving from server", PlayerList.this.getLastMessage().getPrintable());
+                            doTransactionFake(PlayerList.this.getLastMessage().toLog);
+                            updateButtons(PlayerList.this.getLastMessage().gamePlayers);
                         }
                     });
                 }
@@ -60,6 +66,40 @@ public class PlayerList extends AppCompatActivity {
         tax_player = new GamePlayer(0, getString(R.string.freeparking_player));
         monopolyServer = new NSDMonopolyServer(this);
         Toast.makeText(getApplicationContext(), R.string.server_mode, Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateButtons(GamePlayer[] gamePlayers) {
+        if (layout.getChildCount() != gamePlayers.length) {
+            inflateLayout(gamePlayers);
+        } else {
+            updateLayout(gamePlayers);
+        }
+    }
+
+    private void updateLayout(GamePlayer[] gamePlayers) {
+        for (int i = 0; i < gamePlayers.length; i++) {
+            Button button = (Button) layout.getChildAt(i);
+            button.setText(getTextPlayer(gamePlayers[i]));
+        }
+    }
+
+    private void inflateLayout(GamePlayer[] gamePlayers) {
+        layout.removeAllViews();
+        for (int i = 0; i < gamePlayers.length; i++) {
+            Button button = new Button(this);
+            button.setText(getTextPlayer(gamePlayers[i]));
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(PlayerList.this, Transaction.class);
+                    intent.putExtra(EXTRA_SENDER_NAME, getName(v));
+                    intent.putExtra(NewGame.EXTRA_PLAYER_LIST, getPlayersNames());
+                    startActivityForResult(intent, 0);
+                }
+            });
+
+            layout.addView(button);
+        }
     }
 
     void createPlayers(String[] players) {
@@ -131,17 +171,18 @@ public class PlayerList extends AppCompatActivity {
         if (to.equals(getString(R.string.freeparking_player))) {
             if (!player.doPay(money, tax_player)) {
                 Toast.makeText(getApplicationContext(), R.string.cant_buy, Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
-                addToLog(result);
+                return;
             }
+
+            Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+            addToLog(result);
         } else if (to.equals(getString(R.string.bank_player))) {
             if (!player.doBuy(money)) {
                 Toast.makeText(getApplicationContext(), R.string.cant_buy, Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
-                addToLog(result);
+                return;
             }
+            Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+            addToLog(result);
         } else if (to.equals(getString(R.string.bank_pays))) {
             result = from +
                     " <- " + String.valueOf(money) +
@@ -167,15 +208,31 @@ public class PlayerList extends AppCompatActivity {
 
             if (!player.doPay(money, player_gets)) {
                 Toast.makeText(getApplicationContext(), R.string.cant_buy, Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
-                addToLog(result);
+                return;
             }
+
+            Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+            addToLog(result);
         }
 
-        monopolyServer.sendToAll("Transaction");
+        monopolyServer.sendToAll(new MonopolyMessage(player_list, from, to, money, result));
 
         refreshButtonsPlayers();
+    }
+
+    private void doTransactionFake(String toLog) {
+        playSound(R.raw.transfer);
+        Toast.makeText(getApplicationContext(), toLog, Toast.LENGTH_SHORT).show();
+        addToLog(toLog);
+    }
+
+    private void playSound(int resource) {
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        }
+        mediaPlayer = MediaPlayer.create(this, resource);
+        mediaPlayer.start();
     }
 
     private void refreshButtonsPlayers() {
@@ -226,12 +283,11 @@ public class PlayerList extends AppCompatActivity {
     }
 
     @Override
-    public void onPause() {
-        // TODO: Can't be done in here because transaction is open continuously (server discovery and accept needed and client too)
+    public void onDestroy() {
         tryStopServer();
         tryStopClient();
 
-        super.onPause();
+        super.onDestroy();
     }
 
     private void tryStopClient() {
@@ -248,5 +304,13 @@ public class PlayerList extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void setLastMessage(MonopolyMessage lastMessage) {
+        this.lastMessage = lastMessage;
+    }
+
+    public MonopolyMessage getLastMessage() {
+        return lastMessage;
     }
 }

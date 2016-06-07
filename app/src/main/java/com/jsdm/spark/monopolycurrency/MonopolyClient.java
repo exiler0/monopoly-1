@@ -14,10 +14,10 @@ public class MonopolyClient {
     private Thread clientThread;
     private Socket socket;
     private volatile boolean running;
-    private OnMsgListener onMsgListener;
+    private OnMonopolyMessageListener onMsgListener;
     private ObjectInputStream in;
 
-    public MonopolyClient(final String address, final int port, final OnMsgListener onMsgListener) {
+    public MonopolyClient(final String address, final int port, final OnMonopolyMessageListener onMsgListener) {
         this.onMsgListener = onMsgListener;
 
         running = true;
@@ -33,9 +33,9 @@ public class MonopolyClient {
                     while (running) {
                         try {
                             Log.d("Trying to read", "Client");
-                            Object msg = in.readObject();
+                            MonopolyMessage msg = (MonopolyMessage) in.readObject();
                             Log.d("Reading", msg.toString());
-                            onMsgListener.onMsg(msg);
+                            onMsgListener.onMessage(msg);
                         } catch (ClassNotFoundException e) {
                             e.printStackTrace();
                         }
