@@ -181,7 +181,7 @@ public class NewGame extends AppCompatActivity {
     }
 
     public interface DiscoveryListener {
-        public void onDiscover(String address, int port);
+        void onDiscover(String address, int port);
     }
 }
 

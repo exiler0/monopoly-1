@@ -14,6 +14,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.List;
+
 public class PlayerList extends AppCompatActivity {
     public final static int INITIAL_MONEY = 1500;
     public final static String EXTRA_SENDER_NAME = "com.spark.jsdm.monopolycurrency.transactionsender";
@@ -53,7 +55,7 @@ public class PlayerList extends AppCompatActivity {
                         public void run() {
                             Log.d("Receiving from server", PlayerList.this.getLastMessage().getPrintable());
                             doTransactionFake(PlayerList.this.getLastMessage().toLog);
-                            updateButtons(PlayerList.this.getLastMessage().gamePlayers);
+                            updateButtons(PlayerList.this.getLastMessage().playerList);
                         }
                     });
                 }
@@ -68,26 +70,28 @@ public class PlayerList extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), R.string.server_mode, Toast.LENGTH_SHORT).show();
     }
 
-    private void updateButtons(GamePlayer[] gamePlayers) {
-        if (layout.getChildCount() != gamePlayers.length) {
-            inflateLayout(gamePlayers);
+    private void updateButtons(String playerList) {
+        String[] split = playerList.split(",");
+        if (layout.getChildCount() != split.length) {
+            inflateLayout(split);
         } else {
-            updateLayout(gamePlayers);
+            updateLayout(split);
         }
     }
 
-    private void updateLayout(GamePlayer[] gamePlayers) {
-        for (int i = 0; i < gamePlayers.length; i++) {
+    private void updateLayout(String[] playerList) {
+
+        for (int i = 0; i < playerList.length; i++) {
             Button button = (Button) layout.getChildAt(i);
-            button.setText(getTextPlayer(gamePlayers[i]));
+            button.setText(playerList[i]);
         }
     }
 
-    private void inflateLayout(GamePlayer[] gamePlayers) {
+    private void inflateLayout(String[] playerList) {
         layout.removeAllViews();
-        for (int i = 0; i < gamePlayers.length; i++) {
+        for (int i = 0; i < playerList.length; i++) {
             Button button = new Button(this);
-            button.setText(getTextPlayer(gamePlayers[i]));
+            button.setText(playerList[i]);
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -215,7 +219,7 @@ public class PlayerList extends AppCompatActivity {
             addToLog(result);
         }
 
-        monopolyServer.sendToAll(new MonopolyMessage(player_list, from, to, money, result));
+        monopolyServer.sendToAll(new MonopolyMessage(player_list, result));
 
         refreshButtonsPlayers();
     }
