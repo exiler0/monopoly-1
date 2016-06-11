@@ -7,11 +7,11 @@ import java.util.List;
 /**
  * Created by Silvio on 6/5/2016.
  */
-public class MonopolyMessage implements Serializable {
+public class ServerMonopolyMessage implements Serializable {
     public String playerList;
     public String toLog;
 
-    public MonopolyMessage(GamePlayer[] gamePlayers, String toLog) {
+    public ServerMonopolyMessage(GamePlayer[] gamePlayers, String toLog) {
         playerList = "";
         for (int i = 0; i < gamePlayers.length; i++) {
             playerList += gamePlayers[i].getPrintable();

@@ -28,4 +28,5 @@
     <string name="client_mode">Client Mode.</string>
     <string name="server_mode">Server Mode.</string>
     <string name="found_server">Server Found(__address__:__port__)</string>
+    <string name="accept_transaction">Accept transaction</string>
 </resources>

@@ -4,12 +4,9 @@ import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
-import android.widget.Toast;
-
-import com.jsdm.spark.monopolycurrency.server.Client;
-import com.jsdm.spark.monopolycurrency.server.Server;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.ServerSocket;
@@ -31,8 +28,10 @@ public class NSDMonopolyServer {
     List<ClientConnection> clientConnections;
     private final Thread serverThreadAccept;
     private volatile boolean running;
+    private OnClientMessageListener onClientMessageListener;
 
-    public NSDMonopolyServer(final Context context) {
+    public NSDMonopolyServer(final Context context, final OnClientMessageListener onClientMessageListener) {
+        this.onClientMessageListener = onClientMessageListener;
         try {
             server = new ServerSocket(0);
         } catch (IOException e) {
@@ -49,7 +48,7 @@ public class NSDMonopolyServer {
                 while (running) {
                     try {
                         Socket socket = server.accept();
-                        clientConnections.add(new ClientConnection(socket));
+                        clientConnections.add(new ClientConnection(socket, onClientMessageListener));
                         Log.d("ClientConnect", socket.getInetAddress().toString() + ":" + Integer.toString(socket.getPort()));
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -63,12 +62,15 @@ public class NSDMonopolyServer {
     public void sendToAll(Serializable msg) {
         for (ClientConnection cc : clientConnections) {
             cc.sendTo(msg);
-            Log.d("Sending to clients", ((MonopolyMessage) msg).getPrintable());
+            Log.d("Sending to clients", ((ServerMonopolyMessage) msg).getPrintable());
         }
     }
 
     public void stopService() {
         running = false;
+        for (int i = 0; i < clientConnections.size(); i++) {
+            clientConnections.get(i).stopService();
+        }
         nsdManager.unregisterService(registrationListener);
     }
 
@@ -110,16 +112,41 @@ public class NSDMonopolyServer {
     }
 
     private class ClientConnection {
+        private final Thread clientThread;
+        private ObjectInputStream in;
         private ObjectOutputStream out;
         private Socket socket;
+        private OnClientMessageListener onClientListener;
+        private boolean clientRunning = true;
 
-        public ClientConnection(Socket socket) {
+        public ClientConnection(Socket socket, OnClientMessageListener onClientMessageListener) {
             this.socket = socket;
+            this.onClientListener = onClientMessageListener;
             try {
                 out = new ObjectOutputStream(socket.getOutputStream());
+                in = new ObjectInputStream(socket.getInputStream());
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            clientThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (running) {
+                        try {
+                            Log.d("Trying to read", "Client");
+                            ClientMonopolyMessage msg = (ClientMonopolyMessage) in.readObject();
+                            Log.d("Reading", msg.toString());
+                            onClientListener.onMessage(msg);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+            clientThread.start();
         }
 
         private void sendTo(Serializable msg) {
@@ -132,6 +159,10 @@ public class NSDMonopolyServer {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        public void stopService() {
+            clientRunning = false;
         }
     }
 }

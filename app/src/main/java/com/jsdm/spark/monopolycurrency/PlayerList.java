@@ -14,8 +14,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.List;
-
 public class PlayerList extends AppCompatActivity {
     public final static int INITIAL_MONEY = 1500;
     public final static String EXTRA_SENDER_NAME = "com.spark.jsdm.monopolycurrency.transactionsender";
@@ -27,7 +25,9 @@ public class PlayerList extends AppCompatActivity {
     NSDMonopolyServer monopolyServer;
     private MonopolyClient monopolyClient;
     private MediaPlayer mediaPlayer;
-    private MonopolyMessage lastMessage;
+    private ServerMonopolyMessage serverMonopolyMessage;
+    private ClientMonopolyMessage clientMonopolyMessage;
+    private boolean as_client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,22 +40,23 @@ public class PlayerList extends AppCompatActivity {
         String[] players = intent.getStringArrayExtra(NewGame.EXTRA_PLAYER_LIST);
 
         if (players == null) {
+            as_client = true;
             Toast.makeText(getApplicationContext(), R.string.client_mode, Toast.LENGTH_SHORT).show();
             String address = intent.getStringExtra(NewGame.EXTRA_SERVER_ADDRESS);
             int port = intent.getIntExtra(NewGame.EXTRA_SERVER_PORT, 0);
             Toast.makeText(getApplicationContext(), getString(R.string.found_server).replace("__address__", address).replace("__port__", Integer.toString(port)), Toast.LENGTH_SHORT).show();
             final Handler handler = new Handler();
-            monopolyClient = new MonopolyClient(address, port, new OnMonopolyMessageListener() {
+            monopolyClient = new MonopolyClient(address, port, new OnServerMessageListener() {
                 @Override
-                public void onMessage(MonopolyMessage msg) {
-                    PlayerList.this.setLastMessage(msg);
+                public void onMessage(ServerMonopolyMessage msg) {
+                    PlayerList.this.setServerMonopolyMessage(msg);
                     Log.d("Display Msg", msg.toString());
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            Log.d("Receiving from server", PlayerList.this.getLastMessage().getPrintable());
-                            doTransactionFake(PlayerList.this.getLastMessage().toLog);
-                            updateButtons(PlayerList.this.getLastMessage().playerList);
+                            Log.d("Receiving from server", PlayerList.this.getServerMonopolyMessage().getPrintable());
+                            doTransactionFake(PlayerList.this.getServerMonopolyMessage().toLog);
+                            updateButtons(PlayerList.this.getServerMonopolyMessage().playerList);
                         }
                     });
                 }
@@ -63,10 +64,41 @@ public class PlayerList extends AppCompatActivity {
 
             return;
         }
-
+        as_client = false;
         createPlayers(players);
         tax_player = new GamePlayer(0, getString(R.string.freeparking_player));
-        monopolyServer = new NSDMonopolyServer(this);
+        final Handler handler = new Handler();
+        monopolyServer = new NSDMonopolyServer(this, new OnClientMessageListener() {
+            @Override
+            public void onMessage(final ClientMonopolyMessage msg) {
+                PlayerList.this.setClientMonopolyMessage(msg);
+                Log.d("Display Msg", msg.toString());
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("Receiving from client", PlayerList.this.getClientMonopolyMessage().getPrintable());
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(PlayerList.this);
+                        builder.setMessage(msg.getPrintable())
+                                .setTitle(R.string.accept_transaction)
+                                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        doTransaction(msg.from, msg.to, msg.money);
+                                    }
+                                })
+                                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+
+                                    }
+                                });
+                        builder.create().show();
+                    }
+                });
+
+            }
+        });
         Toast.makeText(getApplicationContext(), R.string.server_mode, Toast.LENGTH_SHORT).show();
     }
 
@@ -80,14 +112,13 @@ public class PlayerList extends AppCompatActivity {
     }
 
     private void updateLayout(String[] playerList) {
-
         for (int i = 0; i < playerList.length; i++) {
             Button button = (Button) layout.getChildAt(i);
             button.setText(playerList[i]);
         }
     }
 
-    private void inflateLayout(String[] playerList) {
+    private void inflateLayout(final String[] playerList) {
         layout.removeAllViews();
         for (int i = 0; i < playerList.length; i++) {
             Button button = new Button(this);
@@ -97,13 +128,23 @@ public class PlayerList extends AppCompatActivity {
                 public void onClick(View v) {
                     Intent intent = new Intent(PlayerList.this, Transaction.class);
                     intent.putExtra(EXTRA_SENDER_NAME, getName(v));
-                    intent.putExtra(NewGame.EXTRA_PLAYER_LIST, getPlayersNames());
+                    intent.putExtra(NewGame.EXTRA_PLAYER_LIST, extractNames(playerList));
                     startActivityForResult(intent, 0);
                 }
             });
 
             layout.addView(button);
         }
+    }
+
+    private String[] extractNames(String[] playerList) {
+        String[] result = new String[playerList.length];
+
+        for (int i = 0; i < playerList.length; i++) {
+            result[i] = playerList[i].substring(0, playerList[i].indexOf(NewGame.SEPARATOR));
+        }
+
+        return result;
     }
 
     void createPlayers(String[] players) {
@@ -157,6 +198,12 @@ public class PlayerList extends AppCompatActivity {
             return;
         }
 
+        if (as_client) {
+            if (monopolyClient != null) {
+                monopolyClient.sendToServer(new ClientMonopolyMessage(data.getStringExtra(Transaction.EXTRA_FROM), data.getStringExtra(Transaction.EXTRA_TO), data.getIntExtra(Transaction.EXTRA_VALUE, 0)));
+            }
+            return;
+        }
         doTransaction(data.getStringExtra(Transaction.EXTRA_FROM), data.getStringExtra(Transaction.EXTRA_TO), data.getIntExtra(Transaction.EXTRA_VALUE, 0));
     }
 
@@ -219,7 +266,7 @@ public class PlayerList extends AppCompatActivity {
             addToLog(result);
         }
 
-        monopolyServer.sendToAll(new MonopolyMessage(player_list, result));
+        monopolyServer.sendToAll(new ServerMonopolyMessage(player_list, result));
 
         refreshButtonsPlayers();
     }
@@ -310,11 +357,19 @@ public class PlayerList extends AppCompatActivity {
         }
     }
 
-    public void setLastMessage(MonopolyMessage lastMessage) {
-        this.lastMessage = lastMessage;
+    public void setServerMonopolyMessage(ServerMonopolyMessage serverMonopolyMessage) {
+        this.serverMonopolyMessage = serverMonopolyMessage;
     }
 
-    public MonopolyMessage getLastMessage() {
-        return lastMessage;
+    public ServerMonopolyMessage getServerMonopolyMessage() {
+        return serverMonopolyMessage;
+    }
+
+    public ClientMonopolyMessage getClientMonopolyMessage() {
+        return clientMonopolyMessage;
+    }
+
+    public void setClientMonopolyMessage(ClientMonopolyMessage clientMonopolyMessage) {
+        this.clientMonopolyMessage = clientMonopolyMessage;
     }
 }

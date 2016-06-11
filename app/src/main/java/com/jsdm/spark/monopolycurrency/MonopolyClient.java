@@ -4,6 +4,8 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.Socket;
 
 /**
@@ -14,10 +16,11 @@ public class MonopolyClient {
     private Thread clientThread;
     private Socket socket;
     private volatile boolean running;
-    private OnMonopolyMessageListener onMsgListener;
+    private OnServerMessageListener onMsgListener;
     private ObjectInputStream in;
+    private ObjectOutputStream out;
 
-    public MonopolyClient(final String address, final int port, final OnMonopolyMessageListener onMsgListener) {
+    public MonopolyClient(final String address, final int port, final OnServerMessageListener onMsgListener) {
         this.onMsgListener = onMsgListener;
 
         running = true;
@@ -30,10 +33,11 @@ public class MonopolyClient {
                     socket = new Socket(address, port);
                     Log.d("SeverConnect", socket.getInetAddress().toString() + ":" + Integer.toString(socket.getPort()));
                     in = new ObjectInputStream(socket.getInputStream());
+                    out = new ObjectOutputStream(socket.getOutputStream());
                     while (running) {
                         try {
                             Log.d("Trying to read", "Client");
-                            MonopolyMessage msg = (MonopolyMessage) in.readObject();
+                            ServerMonopolyMessage msg = (ServerMonopolyMessage) in.readObject();
                             Log.d("Reading", msg.toString());
                             onMsgListener.onMessage(msg);
                         } catch (ClassNotFoundException e) {
@@ -46,6 +50,19 @@ public class MonopolyClient {
             }
         });
         clientThread.start();
+    }
+
+    void sendToServer(Serializable msg) {
+        if (out == null) {
+            Log.d("null out stream", "Trying to send data");
+            return;
+        }
+        try {
+            out.writeObject(msg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void stopService() {
