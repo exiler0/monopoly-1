@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -31,6 +32,7 @@ public class NewGame extends AppCompatActivity {
 
     public void delPlayer(View view) {
         layout.removeView((View) view.getParent());
+        updateReadyButton();
     }
 
     public void ready(View view) {
@@ -141,6 +143,16 @@ public class NewGame extends AppCompatActivity {
         }
         getLayoutInflater().inflate(R.layout.layout_player, layout);
         ((LinearLayout) layout.getChildAt(layout.getChildCount() - 1)).getChildAt(0).requestFocus();
+        updateReadyButton();
+    }
+
+    private void updateReadyButton() {
+        Button button = (Button) findViewById(R.id.readyButton);
+        if (layout.getChildCount() > 0) {
+            button.setText(getString(R.string.create_button));
+        } else {
+            button.setText(getString(R.string.join_button));
+        }
     }
 
     @Override
@@ -184,6 +196,3 @@ public class NewGame extends AppCompatActivity {
         void onDiscover(String address, int port);
     }
 }
-
-// TODO: Font size depending on device
-// TODO: "Ready" button change text depending on players
