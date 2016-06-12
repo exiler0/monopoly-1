@@ -1,0 +1,36 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat">
+        <!-- Customize your theme here. -->
+        <item name="android:textSize">@dimen/text_large</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+    </style>
+
+    <style name="AppTheme.Bank" parent="AppTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorControlHighlight">@android:color/holo_blue_bright</item>
+        <item name="colorButtonNormal">@android:color/holo_blue_dark</item>
+    </style>
+
+    <style name="AppTheme.FreeParking" parent="AppTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorControlHighlight">@android:color/holo_green_light</item>
+        <item name="colorButtonNormal">@android:color/holo_green_dark</item>
+    </style>
+
+    <style name="AppTheme.Buy" parent="AppTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorControlHighlight">@android:color/holo_orange_light</item>
+        <item name="colorButtonNormal">@android:color/holo_orange_dark</item>
+    </style>
+
+    <style name="AppTheme.Tax" parent="AppTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorControlHighlight">@android:color/holo_red_light</item>
+        <item name="colorButtonNormal">@android:color/holo_red_dark</item>
+    </style>
+
+</resources>
