@@ -1,8 +1,10 @@
 package com.jsdm.spark.monopolycurrency;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
+import android.os.Build;
 import android.util.Log;
 
 /**
@@ -20,6 +22,7 @@ public class NSDMonopolyDiscoverer {
         discoverService(context);
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void stopService() {
         if (stoppped) {
             return;
@@ -28,6 +31,7 @@ public class NSDMonopolyDiscoverer {
         stoppped = true;
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void discoverService(final Context context) {
         resolveListener = new NsdManager.ResolveListener() {
             @Override

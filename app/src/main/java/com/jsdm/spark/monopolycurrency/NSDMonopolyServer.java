@@ -1,8 +1,10 @@
 package com.jsdm.spark.monopolycurrency;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
+import android.os.Build;
 import android.util.Log;
 
 import java.io.IOException;
@@ -66,6 +68,7 @@ public class NSDMonopolyServer {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void stopService() {
         running = false;
         for (int i = 0; i < clientConnections.size(); i++) {
@@ -74,6 +77,7 @@ public class NSDMonopolyServer {
         nsdManager.unregisterService(registrationListener);
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void registerService(int port, Context context) {
         NsdServiceInfo serviceInfo = new NsdServiceInfo();
         serviceInfo.setServiceName(NSD_MONOPOLY);
