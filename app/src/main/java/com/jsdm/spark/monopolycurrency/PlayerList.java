@@ -267,8 +267,8 @@ public class PlayerList extends AppCompatActivity {
         }
 
         monopolyServer.sendToAll(new ServerMonopolyMessage(player_list, result));
-
         refreshButtonsPlayers();
+        playSound(R.raw.transfer);
     }
 
     private void doTransactionFake(String toLog) {
