@@ -77,6 +77,10 @@ public class PlayerList extends AppCompatActivity {
                     @Override
                     public void run() {
                         Log.d("Receiving from client", PlayerList.this.getClientMonopolyMessage().getPrintable());
+                        if (msg.from.equals(MonopolyClient.REQUEST_PLAYER_LIST)) {
+                            doTransaction(player_list[0].getName(), getString(R.string.bank_pays), 0);
+                            return;
+                        }
 
                         AlertDialog.Builder builder = new AlertDialog.Builder(PlayerList.this);
                         builder.setMessage(msg.getPrintable())

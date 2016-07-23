@@ -13,6 +13,7 @@ import java.net.Socket;
  */
 public class MonopolyClient {
 
+    public static final String REQUEST_PLAYER_LIST = "REQUEST PLAYER LIST";
     private Thread clientThread;
     private Socket socket;
     private volatile boolean running;
@@ -34,6 +35,7 @@ public class MonopolyClient {
                     Log.d("SeverConnect", socket.getInetAddress().toString() + ":" + Integer.toString(socket.getPort()));
                     in = new ObjectInputStream(socket.getInputStream());
                     out = new ObjectOutputStream(socket.getOutputStream());
+                    sendToServer(new ClientMonopolyMessage(REQUEST_PLAYER_LIST, " ", 0));
                     while (running) {
                         try {
                             Log.d("Trying to read", "Client");
