@@ -1,16 +1,15 @@
 package com.jsdm.spark.monopolycurrency;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.net.nsd.NsdManager;
-import android.net.nsd.NsdServiceInfo;
-import android.os.Build;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -20,29 +19,26 @@ import java.util.List;
 /**
  * Created by Silvio on 6/4/2016.
  */
-public class NSDMonopolyServer {
-
-    public static final String NSD_MONOPOLY = "NSDMonopoly";
-    public static final String HTTP_TCP = "_http._tcp.";
-    NsdManager nsdManager;
-    private NsdManager.RegistrationListener registrationListener;
+public class MonopolyServer {
+    public static final int PORT = 50007;
     ServerSocket server;
     List<ClientConnection> clientConnections;
     private final Thread serverThreadAccept;
     private volatile boolean running;
-    private OnClientMessageListener onClientMessageListener;
+    private Context context;
 
-    public NSDMonopolyServer(final Context context, final OnClientMessageListener onClientMessageListener) {
-        this.onClientMessageListener = onClientMessageListener;
+    public MonopolyServer(final Context context, final OnClientMessageListener onClientMessageListener) {
+        this.context = context;
+        startHotSpot(context);
+
         try {
-            server = new ServerSocket(0);
+            server = new ServerSocket(PORT);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         running = true;
         clientConnections = Collections.synchronizedList(new ArrayList<ClientConnection>());
-        registerService(server.getLocalPort(), context);
 
         serverThreadAccept = new Thread(new Runnable() {
             @Override
@@ -61,6 +57,33 @@ public class NSDMonopolyServer {
         serverThreadAccept.start();
     }
 
+    private void startHotSpot(Context context) {
+        WifiConfiguration netConfig = new WifiConfiguration();
+
+        netConfig.SSID = "MonopolyCurrencyAP";
+        netConfig.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+        netConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+        netConfig.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+        netConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+
+        try {
+            WifiManager wifiManager = (WifiManager) context.getSystemService(context.WIFI_SERVICE);
+            Method setWifiApMethod = wifiManager.getClass().getMethod("setWifiApEnabled", WifiConfiguration.class, boolean.class);
+            boolean apstatus = (Boolean) setWifiApMethod.invoke(wifiManager, netConfig, true);
+
+            Method isWifiApEnabledMethod = wifiManager.getClass().getMethod("isWifiApEnabled");
+            while (!(Boolean) isWifiApEnabledMethod.invoke(wifiManager)) {
+            }
+            Method getWifiApStateMethod = wifiManager.getClass().getMethod("getWifiApState");
+            int apState = (Integer) getWifiApStateMethod.invoke(wifiManager);
+            Method getWifiApConfigurationMethod = wifiManager.getClass().getMethod("getWifiApConfiguration");
+            netConfig = (WifiConfiguration) getWifiApConfigurationMethod.invoke(wifiManager);
+            Log.e("CLIENT", "\nSSID:" + netConfig.SSID + "\nPassword:" + netConfig.preSharedKey + "\n");
+        } catch (Exception e) {
+            Log.e(this.getClass().toString(), "", e);
+        }
+    }
+
     public void sendToAll(Serializable msg) {
         for (ClientConnection cc : clientConnections) {
             cc.sendTo(msg);
@@ -68,50 +91,32 @@ public class NSDMonopolyServer {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public void stopService() {
+    public void stopServing() {
+        stopHotSpot();
         running = false;
-        for (int i = 0; i < clientConnections.size(); i++) {
-            clientConnections.get(i).stopService();
+        try {
+            server.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        nsdManager.unregisterService(registrationListener);
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public void registerService(int port, Context context) {
-        NsdServiceInfo serviceInfo = new NsdServiceInfo();
-        serviceInfo.setServiceName(NSD_MONOPOLY);
-        serviceInfo.setServiceType(HTTP_TCP);
-        serviceInfo.setPort(port);
+    private void stopHotSpot() {
+        WifiConfiguration netConfig = new WifiConfiguration();
 
+        netConfig.SSID = "MonopolyCurrencyAP";
+        netConfig.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+        netConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+        netConfig.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+        netConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
 
-        registrationListener = new NsdManager.RegistrationListener() {
-            @Override
-            public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-                Log.d("onRegistrationFailed", "Name: " + serviceInfo.getServiceName());
-                Log.d("onRegistrationFailed", "Error Code: " + Integer.toString(errorCode));
-            }
-
-            @Override
-            public void onUnregistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-                Log.d("onUnregistrationFailed", "Name: " + serviceInfo.getServiceName());
-                Log.d("onUnregistrationFailed", "Error Code: " + Integer.toString(errorCode));
-            }
-
-            @Override
-            public void onServiceRegistered(NsdServiceInfo serviceInfo) {
-                Log.d("onServiceRegistered", "Name: " + serviceInfo.getServiceName());
-            }
-
-            @Override
-            public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
-                Log.d("onServiceUnregistered", "Name: " + serviceInfo.getServiceName());
-            }
-        };
-
-        nsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
-        nsdManager.registerService(
-                serviceInfo, NsdManager.PROTOCOL_DNS_SD, registrationListener);
+        try {
+            WifiManager wifiManager = (WifiManager) context.getSystemService(context.WIFI_SERVICE);
+            Method setWifiApMethod = wifiManager.getClass().getMethod("setWifiApEnabled", WifiConfiguration.class, boolean.class);
+            boolean apstatus = (Boolean) setWifiApMethod.invoke(wifiManager, netConfig, false);
+        } catch (Exception e) {
+            Log.e(this.getClass().toString(), "", e);
+        }
 
     }
 
@@ -119,12 +124,9 @@ public class NSDMonopolyServer {
         private final Thread clientThread;
         private ObjectInputStream in;
         private ObjectOutputStream out;
-        private Socket socket;
         private OnClientMessageListener onClientListener;
-        private boolean clientRunning = true;
 
         public ClientConnection(Socket socket, OnClientMessageListener onClientMessageListener) {
-            this.socket = socket;
             this.onClientListener = onClientMessageListener;
             try {
                 out = new ObjectOutputStream(socket.getOutputStream());
@@ -163,10 +165,6 @@ public class NSDMonopolyServer {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-
-        public void stopService() {
-            clientRunning = false;
         }
     }
 }

@@ -22,7 +22,7 @@ public class PlayerList extends AppCompatActivity {
     GamePlayer[] player_list;
 
     GamePlayer tax_player;
-    NSDMonopolyServer monopolyServer;
+    MonopolyServer monopolyServer;
     private MonopolyClient monopolyClient;
     private MediaPlayer mediaPlayer;
     private ServerMonopolyMessage serverMonopolyMessage;
@@ -68,7 +68,7 @@ public class PlayerList extends AppCompatActivity {
         createPlayers(players);
         tax_player = new GamePlayer(0, getString(R.string.freeparking_player));
         final Handler handler = new Handler();
-        monopolyServer = new NSDMonopolyServer(this, new OnClientMessageListener() {
+        monopolyServer = new MonopolyServer(this, new OnClientMessageListener() {
             @Override
             public void onMessage(final ClientMonopolyMessage msg) {
                 PlayerList.this.setClientMonopolyMessage(msg);
@@ -350,7 +350,7 @@ public class PlayerList extends AppCompatActivity {
     private void tryStopServer() {
         if (monopolyServer != null) {
             try {
-                monopolyServer.stopService();
+                monopolyServer.stopServing();
             } catch (Exception e) {
                 e.printStackTrace();
             }
