@@ -21,6 +21,7 @@ import java.util.List;
  */
 public class MonopolyServer {
     public static final int PORT = 50007;
+    public static final String MONOPOLY_CURRENCY_AP = "MonopolyCurrencyAP";
     ServerSocket server;
     List<ClientConnection> clientConnections;
     private final Thread serverThreadAccept;
@@ -60,7 +61,7 @@ public class MonopolyServer {
     private void startHotSpot(Context context) {
         WifiConfiguration netConfig = new WifiConfiguration();
 
-        netConfig.SSID = "MonopolyCurrencyAP";
+        netConfig.SSID = MONOPOLY_CURRENCY_AP;
         netConfig.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
         netConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
         netConfig.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
